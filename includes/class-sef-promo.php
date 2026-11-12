@@ -160,7 +160,7 @@ class SEF_Promo {
 					<?php if ( $links ) : ?>
 						<p class="sef-promo__links">
 							<?php foreach ( $links as $sid => $label ) : ?>
-								<a href="<?php echo esc_url( $base . '#sef/' . $sid ); ?>"><?php echo esc_html( $label ); ?></a>
+								<a class="sef-promo__chip" href="<?php echo esc_url( $base . '#sef/' . $sid ); ?>"><?php echo esc_html( $label ); ?></a>
 							<?php endforeach; ?>
 						</p>
 					<?php endif; ?>
@@ -169,7 +169,7 @@ class SEF_Promo {
 							<?php
 							$parts = array();
 							foreach ( $now as $id => $label ) {
-								$parts[] = '<a href="' . esc_url( $base . '#sef/' . $id ) . '">' . esc_html( $label ) . '</a>';
+								$parts[] = '<a class="sef-promo__now-link" href="' . esc_url( $base . '#sef/' . $id ) . '">' . esc_html( $label ) . '</a>';
 							}
 							echo implode( ' · ', $parts ); // phpcs:ignore
 							?>
@@ -205,10 +205,11 @@ class SEF_Promo {
 .sef-promo p.sef-promo__text{margin:0;font-size:15.5px;color:var(--ink);opacity:.92}
 .sef-promo p.sef-promo__links,.sef-promo p.sef-promo__now{margin:10px 0 0;font-size:14.5px;color:var(--ink)}
 .sef-promo__links{display:flex;flex-wrap:wrap;gap:8px}
-.sef-promo__links a{display:inline-block;padding:4px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--ink) 40%,transparent);color:var(--ink);text-decoration:none;font-weight:600}
-.sef-promo__links a:hover{background:color-mix(in srgb,var(--ink) 12%,transparent)}
+.sef-promo .sef-promo__links a.sef-promo__chip{display:inline-block;padding:4px 12px;border-radius:99px;border:1px solid color-mix(in srgb,var(--ink) 40%,transparent);color:var(--ink)!important;text-decoration:none!important;font-weight:600;background:transparent}
+.sef-promo .sef-promo__links a.sef-promo__chip:hover{background:color-mix(in srgb,var(--ink) 12%,transparent)}
 .sef-promo__now b{color:var(--hl-text)}
-.sef-promo__now a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
+/* Ρητό χρώμα: γενικοί κανόνες θεμάτων (π.χ. #content p a:not([class])) έκαναν τον σύνδεσμο αόρατο πάνω στην κάρτα (0.9.10). */
+.sef-promo .sef-promo__now a.sef-promo__now-link,.sef-promo .sef-promo__now a.sef-promo__now-link:visited,.sef-promo .sef-promo__now a.sef-promo__now-link:hover{color:var(--ink)!important;text-decoration:underline!important;text-decoration-color:currentColor!important;text-underline-offset:2px;background:transparent;font-weight:600}
 .sef-promo a.sef-promo__btn{position:relative;z-index:1;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;margin:0;padding:12px 30px;border-radius:99px;background:var(--sef-p-hl);color:var(--hl-ink);font-size:17px;font-weight:800;line-height:1.2;text-decoration:none;text-transform:none;letter-spacing:0;box-shadow:0 4px 12px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s}
 .sef-promo a.sef-promo__btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.22)}
 .sef-promo a:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px rgba(0,0,0,.55)}
