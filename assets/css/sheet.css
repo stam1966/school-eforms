@@ -1,0 +1,341 @@
+/*
+ * School e-Forms — φύλλο εντύπου Α4
+ * Το ίδιο αρχείο χρησιμοποιείται: (α) στη σελίδα για συμπλήρωση,
+ * (β) στο κρυφό πλαίσιο από το οποίο φτιάχνεται το PDF και (γ) στην εκτύπωση.
+ * Κανόνες για συντηρητές: όχι text-transform, όχι gradients/σκιές μέσα στο
+ * φύλλο (δεν αποτυπώνονται στο PDF). Έντονα = font-weight ≥ 600.
+ */
+@font-face { font-family: 'SEF Doc Sans'; src: url('../fonts/sef-doc-regular.ttf') format('truetype'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SEF Doc Sans'; src: url('../fonts/sef-doc-bold.ttf') format('truetype'); font-weight: 700; font-style: normal; font-display: swap; }
+
+.sef-sheet {
+  --sef-ink: #111;
+  --sef-line: #1c1c1c;
+  --sef-field: #EAF2FC;
+  --sef-field-focus: #DCEAFB;
+  --sef-field-line: #0D5EAF;
+  --sef-bad: #FDECEA;
+  box-sizing: border-box;
+  position: relative;
+  width: 794px;
+  max-width: 100%;
+  min-height: 1123px;
+  margin: 0 auto;
+  padding: 30px 52px 24px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  color: var(--sef-ink);
+  font-family: 'SEF Doc Sans', Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  font-kerning: none;
+  font-variant-ligatures: none;
+  font-feature-settings: "kern" 0, "liga" 0;
+  text-align: left;
+  letter-spacing: 0;
+  word-spacing: 0;
+  text-transform: none;
+}
+.sef-sheet.sef-stamp { padding-top: 106px; } /* αιτήσεις: 8 χιλ. + 2 εκ. (76px) για τη σφραγίδα πρωτοκόλλου, μόνο στην 1η σελίδα (βλ. fitPage) */
+.sef-sheet *, .sef-sheet *::before, .sef-sheet *::after { box-sizing: border-box; letter-spacing: 0; text-transform: none; }
+.sef-sheet p { margin: 0 0 12px; padding: 0; font-size: inherit; line-height: inherit; color: inherit; }
+.sef-sheet sup { font-size: 0.7em; line-height: 0; vertical-align: super; }
+.sef-sheet b, .sef-sheet strong, .sef-sheet .b { font-weight: 700; }
+.sef-sheet [hidden] { display: none !important; }
+
+/* ---------- Πεδία συμπλήρωσης (οθόνη) ---------- */
+form.sef-sheet input, form.sef-sheet select, form.sef-sheet textarea {
+  font: inherit; color: var(--sef-ink); background-color: var(--sef-field);
+  border: 0; border-radius: 3px; margin: 0; min-width: 0; width: auto; height: auto; min-height: 0; float: none;
+  box-shadow: none; line-height: 1.35; padding: 4px 6px; max-width: 100%;
+  -webkit-appearance: none; appearance: none; outline: none;
+}
+form.sef-sheet select {
+  padding-right: 22px; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23456'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 7px center;
+  background-size: 10px 6px; /* θέματα (π.χ. Flatsome) ορίζουν background-size: auto 16px σε κάθε select */
+}
+form.sef-sheet textarea { resize: vertical; width: 100%; display: block; overflow: hidden; }
+form.sef-sheet input:focus, form.sef-sheet select:focus, form.sef-sheet textarea:focus {
+  background-color: var(--sef-field-focus); box-shadow: inset 0 -2px 0 var(--sef-field-line);
+}
+form.sef-sheet input::placeholder, form.sef-sheet textarea::placeholder { color: #6B7A8C; opacity: 1; }
+form.sef-sheet .is-bad { background-color: var(--sef-bad) !important; box-shadow: inset 0 -2px 0 #B3261E !important; }
+
+/* Τετραγωνάκια επιλογής */
+form.sef-sheet label { display: inline; margin: 0; font-weight: inherit; font-size: inherit; color: inherit; float: none; width: auto; }
+.sef-sheet .sef-chk { display: inline-flex; align-items: center; gap: 9px; cursor: pointer; position: relative; }
+form.sef-sheet .sef-chk input { position: absolute; margin: 0; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.sef-box { width: 15px; height: 15px; flex: none; border: 1.3px solid #222; background: #fff; display: inline-block; position: relative; }
+.sef-chk input:checked + .sef-box::after {
+  content: ""; position: absolute; left: 4px; top: 0; width: 5px; height: 10px;
+  border: solid #111; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.sef-chk input:focus-visible + .sef-box { outline: 3px solid #F2B705; outline-offset: 2px; }
+
+/* ---------- Κεφαλίδα Υπεύθυνης Δήλωσης (Ν.1599/1986) ---------- */
+.yd-proto { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-size: 11.5px; margin-bottom: 0; }
+.yd-emblem { display: block; width: 46px; height: auto; margin: 0 auto 2px; }
+.yd-state { text-align: center; font-size: 11px; font-weight: 700; margin: 0 0 4px !important; }
+.yd-title { text-align: center; font-weight: 700; font-size: 17px; margin: 0 !important; }
+.yd-sub { text-align: center; font-weight: 700; font-size: 10.5px; margin: 0 0 9px !important; }
+.yd-box { border: 1px solid var(--sef-line); font-size: 10px; text-align: center; padding: 3px 8px; margin-bottom: 11px; line-height: 1.35; }
+
+.yd-grid { border: 1px solid var(--sef-line); }
+.yd-row { display: grid; grid-template-columns: 1fr; border-top: 1px solid var(--sef-line); }
+.yd-row:first-child { border-top: 0; }
+.yd-row.c2 { grid-template-columns: 1.55fr 1fr; }
+.yd-row.c2e { grid-template-columns: 1fr 1.5fr; }
+.yd-row.c4 { grid-template-columns: 1.25fr 1.45fr .55fr .75fr; }
+.yd-cell { display: flex; align-items: stretch; min-height: 30px; border-left: 1px solid var(--sef-line); min-width: 0; }
+.yd-cell:first-child { border-left: 0; }
+.sef-sheet .yd-lab { font-size: 11px; padding: 0 6px 4px; display: flex; align-items: flex-end; white-space: nowrap; }
+.yd-lab > span { display: block; }
+.sef-sheet .yd-lab.w { min-width: 172px; border-right: 1px solid var(--sef-line); }
+.yd-cell .v { flex: 1; display: flex; align-items: stretch; min-width: 0; }
+form.sef-sheet .yd-cell .v > input, form.sef-sheet .yd-cell .v > select { width: 100%; border-radius: 0; padding: 6px 8px; font-size: 14px; }
+.yd-fixed { padding: 0 12px; display: flex; align-items: center; font-size: 14px; font-weight: 700; }
+.yd-cell.pros .yd-lab { min-width: 92px; border-right: 1px solid var(--sef-line); align-items: center; padding-bottom: 0; font-size: 12px; }
+
+.yd-decl { margin-top: 14px; font-size: 14.5px; }
+.yd-decl > p { margin: 0 0 10px; }
+.yd-line { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 8px; margin: 0 0 11px; }
+form.sef-sheet .yd-line input, form.sef-sheet .yd-line select { border-bottom: 1px solid #333; border-radius: 3px 3px 0 0; padding: 3px 6px; font-size: 14.5px; }
+.yd-line .grow { flex: 1 1 220px; }
+.yd-line .w-xs { width: 54px; text-align: center; }
+.yd-line .w-s { width: 80px; text-align: center; }
+.yd-line .w-m { width: 140px; }
+.yd-line .w-l { width: 230px; }
+.yd-free { width: 100%; min-height: 64px; }
+.yd-text { min-height: 90px; }
+.sef-sheet .yd-bullets { margin: 2px 0 10px 8px; padding: 0; list-style: none; }
+.sef-sheet .yd-bullets li { margin: 0 0 3px; display: flex; gap: 8px; }
+.sef-sheet .yd-bullets .bl { flex: none; }
+form.sef-sheet .yd-title select.yd-kind, form.sef-sheet .ol-title select.yd-kind { font-weight: 700; font-size: 15px; max-width: 100%; }
+.ol-title .sef-fv.yd-kind { font-weight: 700; }
+.yd-title .sef-fv.yd-kind { font-weight: 700; }
+.yd-pick { font-style: italic; color: #456; }
+.yd-opts { margin: 2px 0 10px 46px; display: flex; flex-direction: column; gap: 8px; }
+.sef-sheet .yd-list { margin: 4px 0 14px; padding: 0; list-style: none; }
+.sef-sheet .yd-list li { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px dotted #999; }
+.yd-list li .nm { width: 22px; flex: none; }
+.yd-list li .tx { flex: 1; }
+
+.yd-sign { margin: 10px 0 0 auto; width: 300px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 14.5px; text-align: center; }
+.yd-sign .d { display: flex; align-items: baseline; gap: 8px; }
+.yd-sign .sp { height: 46px; }
+.yd-sign .nm { min-height: 1.3em; font-weight: 700; }
+.yd-sign .cap { font-size: 12.5px; }
+.yd-notes { margin-top: auto; padding-top: 12px; font-size: 9px; line-height: 1.3; color: #222; }
+.yd-notes p { margin: 0 0 2px; }
+.yd-espa { display: block; width: 100%; max-width: 560px; height: auto; margin: 8px auto 0; }
+
+/* ---------- Αίτηση δύο στηλών (υπηρεσιακό υπόδειγμα) ---------- */
+.ap-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 36px; flex: 0 0 auto; }
+/* Οι δύο στήλες έχουν το ύψος της μεγαλύτερης· «Τόπος, ημερομηνία» αριστερά και
+   υπογραφή δεξιά μπαίνουν αμέσως κάτω από τα κείμενα, στο ίδιο ύψος μεταξύ τους. */
+.ap-col { display: flex; flex-direction: column; min-width: 0; }
+.ap-head { text-align: center; font-weight: 700; font-size: 16px; min-height: 92px; line-height: 1.5; }
+.ap-head .s { display: block; font-size: 13.5px; font-weight: 700; }
+.ap-head .t { display: block; font-size: 12.5px; font-weight: 400; }
+.ap-sec { font-weight: 700; font-size: 13px; margin: 0 0 8px !important; text-decoration: underline; }
+.ap-row { display: flex; align-items: baseline; gap: 6px; margin: 0 0 7px; font-size: 13px; }
+.ap-row > label, .ap-row > span { white-space: nowrap; flex: none; }
+form.sef-sheet .ap-row > input, form.sef-sheet .ap-row > select { flex: 1; min-width: 0; border-bottom: 1px dotted #555; border-radius: 3px 3px 0 0; padding: 2px 5px; font-size: 13.5px; }
+.ap-subject { margin-top: 14px; font-size: 13px; }
+form.sef-sheet .ap-subject textarea { margin-top: 4px; min-height: 60px; }
+.ap-place { margin-top: auto; padding-top: 30px; text-align: center; font-weight: 700; display: flex; gap: 8px; justify-content: center; align-items: baseline; flex-wrap: wrap; }
+form.sef-sheet .ap-place input { width: 130px; }
+.ap-place > span:not(.sef-fv) { margin-left: -7px; }
+.sef-export .ap-place .sef-fv { width: auto; min-width: 0; padding: 0; }
+.ap-req { font-size: 13.5px; line-height: 1.7; }
+.ap-req p { margin: 0 0 10px; }
+form.sef-sheet .ap-req textarea { min-height: 220px; line-height: 1.7; }
+form.sef-sheet .ap-req .yd-line input, form.sef-sheet .ap-req .yd-line select { font-size: 13.5px; }
+.ap-attach { margin-top: 14px; font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
+.ap-attach-list { display: flex; flex-direction: column; gap: 8px; }
+.ap-attach-list:empty { display: none; }
+.yd-attach { margin: 2px 0 10px 46px; }
+.sef-export .sef-screen-only { display: none !important; }
+form.sef-sheet .ap-req textarea.ap-reasons, .sef-app form.sef-sheet .ap-req textarea.ap-reasons { min-height: 70px; }
+.sef-export .ap-req .sef-fv.blk.ap-reasons { min-height: 24px; }
+.ap-attach-other { display: flex; }
+form.sef-sheet .ap-attach-other input { flex: 1; border-bottom: 1px dotted #555; }
+.sef-export .ap-attach-other .sef-fv { flex: 1; }
+.sef-blank .ap-attach-other .sef-fv { border-bottom: 1px dotted #555; min-height: 1.5em; margin-top: 6px; }
+.ap-sign { margin-top: auto; padding-top: 22px; text-align: center; font-size: 13.5px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.ap-sign .sp { height: 54px; width: 75%; border-bottom: 1px solid #555; }
+.ap-sign .nm { min-height: 1.3em; font-weight: 700; }
+
+/* Χώρος για το βελάκι των λιστών (μετά από όλους τους κανόνες padding) */
+form.sef-sheet .yd-line select, form.sef-sheet .ap-row > select, form.sef-sheet .yd-cell select,
+form.sef-sheet .yd-sign select, form.sef-sheet .ap-sign select { padding-right: 24px; }
+
+/* Ενισχυμένο (υψηλότερη εξειδίκευση) για θέματα με επιθετικούς κανόνες select */
+.sef-app form.sef-sheet select:not([multiple]), form.sef-sheet.sef-sheet select:not([multiple]) {
+  background-size: 10px 6px; background-repeat: no-repeat; background-position: right 7px center;
+}
+
+/* Παράρτημα (π.χ. «ΠΑΡΑΡΤΗΜΑ Ι») */
+.yd-annex { font-size: 12px; font-weight: 700; margin-bottom: -14px; }
+.yd-indent { margin-left: 46px; }
+
+/* Επικαιροποίηση Ολοήμερου: ένα πλαίσιο ανά παιδί */
+.ol-top { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; font-weight: 700; border-bottom: 1px solid #333; padding-bottom: 6px; margin-bottom: 14px; }
+.ol-top-c { justify-content: center; font-weight: 600; }
+.ol-title { text-align: center; font-weight: 700; font-size: 15px; line-height: 1.45; margin: 0 0 16px !important; }
+.ol-child { position: relative; border: 1px solid #555; border-radius: 4px; padding: 10px 12px 6px 40px; margin: 12px 0; }
+.ol-n { position: absolute; left: 10px; top: 10px; font-weight: 700; }
+.ol-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 6px 0; font-size: 14px; }
+.ol-opts { display: flex; flex-wrap: wrap; gap: 6px 22px; }
+.ol-note { font-size: 12px; margin: 4px 0 0 !important; }
+.ol-sign { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-top: 18px; }
+.ol-sign .ap-place { margin: 0; padding: 0; }
+.ol-sign .ap-sign { margin: 0; padding: 0; min-width: 260px; }
+.ap-sign .cap { font-size: 12px; }
+@media (max-width: 640px) { .sef-sheet:not(.sef-export) .ol-child { padding-left: 12px; padding-top: 30px; } .sef-sheet:not(.sef-export) .ol-sign { flex-direction: column; align-items: stretch; } }
+
+/* ---------- Τελική μορφή (PDF / εκτύπωση) ---------- */
+.sef-sheet.sef-export { width: 794px; max-width: none; min-height: 1123px; }
+.sef-export .sef-fv { display: inline-block; min-height: 1.3em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.sef-export .yd-cell .v > .sef-fv { display: flex; align-items: center; width: 100%; padding: 0 8px; font-size: 14px; }
+.sef-export .yd-line .sef-fv { border-bottom: 1px solid #333; padding: 0 6px 1px; text-align: center; min-width: 40px; }
+.sef-export .yd-line .sef-fv.grow { text-align: left; }
+.sef-export .ap-row > .sef-fv { flex: 1; border-bottom: 1px dotted #555; padding: 0 5px; }
+.sef-export .sef-fv.blk { display: block; width: 100%; text-align: left; border: 0; padding: 2px 0; }
+.sef-export .ap-req .sef-fv.blk { min-height: 60px; }
+.sef-export .yd-free.sef-fv, .sef-export .yd-text.sef-fv { min-height: 40px; }
+.sef-export .sef-chk { cursor: default; }
+
+/* ---------- Κινητά: η οθόνη συμπλήρωσης γίνεται μονόστηλη ---------- */
+@media (max-width: 700px) {
+  .sef-sheet:not(.sef-export) { padding: 22px 14px 20px; min-height: 0; font-size: 15px; }
+  .sef-sheet:not(.sef-export) .yd-row { grid-template-columns: 1fr !important; }
+  .sef-sheet:not(.sef-export) .yd-cell { border-left: 0; border-top: 1px solid var(--sef-line); flex-direction: column; }
+  .sef-sheet:not(.sef-export) .yd-cell:first-child { border-top: 0; }
+  .sef-sheet:not(.sef-export) .yd-lab, .sef-sheet:not(.sef-export) .sef-sheet .yd-lab.w { min-width: 0; border-right: 0 !important; padding-top: 6px; white-space: normal; }
+  .sef-sheet:not(.sef-export) .yd-cell .v > input, .sef-sheet:not(.sef-export) .yd-cell .v > select { min-height: 40px; font-size: 16px; }
+  .sef-sheet:not(.sef-export) .yd-line input, .sef-sheet:not(.sef-export) .yd-line select { font-size: 16px; }
+  .sef-sheet:not(.sef-export) .yd-opts { margin-left: 4px; }
+  .sef-sheet:not(.sef-export) .yd-sign { margin-right: auto; }
+  .sef-sheet:not(.sef-export) .ap-cols { grid-template-columns: 1fr; row-gap: 22px; }
+  .sef-sheet:not(.sef-export) .ap-head { min-height: 0; }
+  .sef-sheet:not(.sef-export) .ap-row { flex-wrap: wrap; }
+  .sef-sheet:not(.sef-export) .ap-row > input, .sef-sheet:not(.sef-export) .ap-row > select { flex-basis: 100%; font-size: 16px; min-height: 38px; }
+  form.sef-sheet:not(.sef-export) .ap-req textarea { min-height: 160px; }
+  .sef-sheet:not(.sef-export) .yd-notes { margin-top: 18px; }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 0; }
+  html, body { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  .sef-print-bar { display: none !important; }
+  .sef-sheet { box-shadow: none !important; margin: 0 !important; width: 210mm !important; min-height: 297mm; }
+}
+
+/* Τικ στην τελική μορφή (η εκτύπωση το δείχνει με CSS, το PDF το σχεδιάζει διανυσματικά) */
+.sef-export .sef-box[data-pdf-check="1"]::after {
+  content: ""; position: absolute; left: 4px; top: 0; width: 5px; height: 10px;
+  border: solid #111; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.sef-pdf-mode .sef-box[data-pdf-check="1"]::after { display: none; }
+
+/* Αυτόματη σύμπτυξη όταν το περιεχόμενο ξεπερνά τη σελίδα Α4 (μόνο στην τελική μορφή) */
+.sef-export.sef-fit-1 { padding-top: 22px; padding-bottom: 16px; line-height: 1.38; }
+.sef-export.sef-fit-1 .yd-decl { font-size: 13.5px; }
+.sef-export.sef-fit-1 .yd-line { margin-bottom: 8px; }
+.sef-export.sef-fit-1 .yd-sign .sp, .sef-export.sef-fit-1 .ap-sign .sp { height: 34px; }
+.sef-export.sef-fit-1 .ap-req { line-height: 1.55; }
+.sef-export.sef-fit-2 { font-size: 13px; line-height: 1.3; }
+.sef-export.sef-fit-2 .yd-decl, .sef-export.sef-fit-2 .yd-line .sef-fv { font-size: 12.5px; }
+.sef-export.sef-fit-2 .yd-cell { min-height: 26px; }
+.sef-export.sef-fit-2 .yd-notes { font-size: 8.5px; }
+.sef-export.sef-fit-2 .ap-req, .sef-export.sef-fit-2 .ap-row { font-size: 12.5px; }
+.sef-export.sef-fit-3 { padding-top: 14px; padding-bottom: 10px; line-height: 1.24; }
+.sef-export.sef-fit-3 .yd-decl, .sef-export.sef-fit-3 .yd-line .sef-fv { font-size: 11.5px; }
+.sef-export.sef-fit-3 .yd-decl p { margin-bottom: 5px; }
+.sef-export.sef-fit-3 .yd-line { margin-bottom: 5px; }
+.sef-export.sef-fit-3 .yd-cell { min-height: 21px; }
+.sef-export.sef-fit-3 .yd-bullets li { margin-bottom: 1px; }
+.sef-export.sef-fit-3 .yd-opts { gap: 3px; margin-bottom: 6px; }
+.sef-export.sef-fit-3 .yd-sign .sp { height: 22px; }
+.sef-export.sef-fit-3 .yd-sign { margin-top: 2px; gap: 2px; }
+.sef-export.sef-fit-3 .yd-person { margin-bottom: 3px; }
+.sef-export.sef-fit-3 .yd-notes { margin-top: 6px; }
+.sef-export.sef-fit-3 .yd-box { margin: 6px 0; }
+.sef-export.sef-fit-3 .yd-notes { font-size: 8px; }
+
+/* Κενό έντυπο για χειρόγραφη συμπλήρωση */
+.sef-blank-lines { width: 100%; }
+.sef-blank-lines > div { height: 28px; border-bottom: 1px dotted #555; }
+.sef-export.sef-blank .ap-req .sef-blank-lines > div, .sef-export.sef-blank .yd-text + .sef-blank-lines > div { height: 30px; }
+.sef-export.sef-blank .yd-line .sef-fv { min-width: 70px; }
+.sef-export.sef-blank .yd-line .sef-fv.grow { min-width: 220px; }
+.sef-export.sef-blank .ap-place .sef-fv { min-width: 110px; border-bottom: 1px dotted #555; }
+
+/* Μηνύματα λάθους δίπλα στο πεδίο (μόνο στην οθόνη· αφαιρούνται από το PDF) */
+.sef-err { display: block; flex-basis: 100%; width: 100%; margin: 3px 0 2px; color: #B3261E; font-size: 12.5px; font-weight: 700; line-height: 1.3; }
+.sef-err::before { content: "⚠ "; }
+.yd-cell .v:has(.sef-err), .ap-row:has(.sef-err), .yd-sign .d:has(.sef-err), .ap-place:has(.sef-err) { flex-wrap: wrap; }
+.yd-cell .v > .sef-err { padding: 0 8px 4px; }
+.is-bad-group { outline: 2px solid #B3261E; outline-offset: 4px; border-radius: 4px; }
+form.sef-sheet [aria-invalid="true"] { background-color: var(--sef-bad) !important; box-shadow: inset 0 -2px 0 #B3261E !important; }
+/* Κινητά: πεδία τουλάχιστον 44px (WCAG 2.5.5) */
+@media (max-width: 700px) {
+  form.sef-sheet:not(.sef-export) input:not([type="radio"]):not([type="checkbox"]),
+  form.sef-sheet:not(.sef-export) select { min-height: 44px; }
+  form.sef-sheet:not(.sef-export) .sef-chk { min-height: 44px; }
+}
+
+/* ---------- 0.9.0: αλλαγή σελίδας (έντυπα δύο σελίδων) ---------- */
+.sef-pb { flex: none; }
+form.sef-sheet .sef-pb { margin: 26px -52px 22px; border-top: 2px dashed #9aa4b2; text-align: center; }
+form.sef-sheet .sef-pb span { position: relative; top: -12px; display: inline-block; padding: 0 10px; background: #fff; font-size: 12.5px; color: #555; }
+.sef-export .sef-pb, form.sef-sheet.sef-export .sef-pb { margin: 0; border: 0; height: 0; }
+@media print { .sef-print-mode .sef-pb { height: 0 !important; break-before: page; page-break-before: always; } }
+
+/* ---------- Μουσικό: αίτηση επιλογής Α΄ τάξης (ΣΥΝ.2 / ΣΥΝ.3) ---------- */
+.ma-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 12.5px; margin: 0 0 6px; }
+.ma-annex { font-weight: 700; margin-left: auto; order: 2; }
+.ma-proto { order: 1; }
+.ma-cols .ap-head { min-height: 0; margin-bottom: 12px; }
+.ma-cols .ap-row { font-size: 12.5px; margin-bottom: 5px; }
+.ma-cols .ap-row > label { white-space: normal; flex: 0 1 auto; max-width: 52%; }
+.ma-n { font-weight: 700; margin: 6px 0 4px !important; font-size: 13px; }
+.ma-note { font-size: 11px; line-height: 1.35; margin: 8px 0 6px !important; text-align: justify; }
+.ma-date { display: flex; justify-content: flex-end; gap: 6px; align-items: baseline; font-weight: 400; font-size: 13px; }
+.ma-school { margin-top: -6px !important; font-weight: 700; }
+.ma-signs { margin-top: 10px; text-align: center; font-size: 13px; }
+.ma-cap { margin: 0 0 4px !important; }
+.ma-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: center; font-size: 13px; }
+.ma-two .sp { height: 38px; }
+.ma-two .nm { display: block; min-height: 1.3em; font-weight: 700; }
+.ma-two .cap { font-size: 12px; margin: 0 !important; }
+.ma-att { margin-top: 12px; font-size: 11.5px; line-height: 1.4; }
+.ma-att p { margin: 0 0 4px !important; }
+.sef-sheet .ma-att ol { margin: 0; padding: 0; list-style: none; }
+.sef-sheet .ma-att li { margin: 0 0 3px; display: flex; gap: 6px; }
+.sef-sheet .ma-att li .bl { flex: none; }
+.ma-p2 { font-size: 14px; }
+.ma-h { font-weight: 700; text-align: center; margin: 14px 0 10px !important; }
+.ma-line { margin: 0 0 10px !important; }
+.ma-fill { display: inline-block; min-width: 60%; min-height: 1.3em; border-bottom: 1px dotted #555; font-weight: 700; padding: 0 4px; vertical-align: bottom; }
+.ma-small { font-size: 11.5px; text-align: center; margin: -6px 0 12px !important; letter-spacing: 0; }
+.ma-decl { font-weight: 700; text-align: center; font-size: 13px; margin: 16px 0 6px !important; }
+.ma-addr { margin: 10px 0 0 60px; max-width: 520px; }
+.ma-addr .ap-row { font-size: 14px; margin-bottom: 9px; }
+.ma-two-p2 { margin-top: 26px; }
+.ma-two-p2 p { margin: 0 !important; }
+
+/* ---------- Δήλωση γονικής συναίνεσης (φωτογραφίες/βίντεο) ---------- */
+.pc-school { text-align: center; font-weight: 700; font-size: 14px; margin: 0 0 6px !important; }
+.pc-title { text-align: center; font-weight: 700; font-size: 17px; margin: 0 !important; }
+.pc-sub { text-align: center; font-size: 13px; margin: 0 0 14px !important; }
+.pc-body { font-size: 13.5px; line-height: 1.5; text-align: justify; }
+.pc-body p { margin: 0 0 9px !important; }
+.pc-h { font-weight: 700; text-align: center; margin: 12px 0 6px !important; }
+.pc-body .yd-opts { margin-left: 20px; }
+.pc-sign { margin-top: 4px; }
+.pc-foot { margin-top: auto !important; padding-top: 14px; border-top: 1px solid #999; font-size: 11px; text-align: center; color: #333; }

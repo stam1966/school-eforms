@@ -1,0 +1,100 @@
+.sef-admin { max-width: 1100px; }
+.sef-admin-title { display: flex; align-items: center; gap: 10px; }
+.sef-ver { font-size: 12px; font-weight: 600; background: #e7f0fa; color: #0d5eaf; border-radius: 999px; padding: 2px 10px; }
+.sef-admin-lead { font-size: 14px; margin: 4px 0 14px; }
+.sef-issues { background: #fff8e5; border: 1px solid #f0c36d; border-left-width: 4px; padding: 10px 14px; margin: 12px 0; border-radius: 4px; }
+.sef-issues ul { margin: 6px 0 0 18px; list-style: disc; }
+.sef-tabs { margin-bottom: 0; }
+.sef-panel { background: #fff; border: 1px solid #c3c4c7; border-top: 0; padding: 6px 20px 16px; }
+.sef-panel[data-sef-panel="send-extra"] { border-top: 1px dashed #dcdcde; padding-top: 0; }
+.sef-submit { background: #fff; border: 1px solid #c3c4c7; border-top: 0; padding: 12px 20px 16px; }
+.sef-forms-table { margin: 6px 0 22px; }
+.sef-forms-table td { vertical-align: middle; }
+.sef-forms-table .col-on { width: 70px; text-align: center; }
+.sef-forms-table .col-mode { width: 330px; }
+.sef-forms-table .col-mode select { width: 100%; max-width: 330px; }
+.sef-forms-table .col-sc { width: 260px; }
+.sef-forms-table .col-sc code { font-size: 11.5px; user-select: all; }
+.sef-forms-table tr.is-other-level td > * { opacity: .55; }
+.sef-forms-table tr.is-other-level td > .sef-other-level, .sef-forms-table tr.is-other-level td > em, .sef-forms-table tr.is-other-level td > br { opacity: 1; }
+.sef-level-note { color: #8a6116; font-size: 12px; }
+.sef-cat-title { border-left: 4px solid #0d5eaf; padding-left: 10px; margin-top: 22px; }
+.sef-c-parents { border-color: #0f766e; }
+.sef-c-teachers { border-color: #1d4ed8; }
+.sef-c-declarations { border-color: #b45309; }
+.sef-toggle input { width: 18px; height: 18px; }
+.sef-switch { display: flex; gap: 8px; align-items: center; }
+.sef-card-admin { background: #f6f7f7; border: 1px solid #dcdcde; border-radius: 6px; padding: 4px 16px 12px; margin: 14px 0; }
+.sef-modes-help { margin-left: 18px; }
+.sef-modes-help li { margin-bottom: 6px; }
+.sef-logo-field { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.sef-logo-field img { max-height: 56px; width: auto; border: 1px solid #dcdcde; padding: 4px; background: #fff; border-radius: 4px; }
+.sef-w-year { width: 120px; }
+.sef-sc-table td:first-child { width: 330px; }
+@media (max-width: 960px) { .sef-forms-table .col-sc { display: none; } .sef-forms-table .col-mode { width: 200px; } }
+
+.sef-links-table { margin-top: 10px; }
+.sef-links-table td { vertical-align: middle; padding: 6px 8px; }
+.sef-links-table .col-drag { width: 44px; white-space: nowrap; }
+.sef-links-table .col-drag .button-link { padding: 0 3px; font-size: 15px; text-decoration: none; }
+.sef-links-table .col-level { width: 220px; }
+.sef-links-table .col-level select { width: 100%; }
+.sef-links-table .col-for { width: 190px; }
+.sef-links-table .col-for select { width: 100%; }
+.sef-links-table .col-level { width: 180px; }
+.sef-links-table .col-del { width: 30px; text-align: center; }
+.sef-links-table tr.is-other-level input, .sef-links-table tr.is-other-level td:not(.col-level) { opacity: .55; }
+.sef-links-actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
+.sef-reset-links { color: #646970; }
+.sef-source { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: middle; }
+.sef-source-custom { background: #e7f5ec; color: #1a7f37; }
+.sef-source-override { background: #fff4dc; color: #8a5300; }
+.sef-code-path { user-select: all; }
+.sef-source-warn { background: #fcf0f1; color: #b32d2e; }
+.sef-attention { border-color: #d63638; background: #fcf0f1; }
+.sef-eff { display: block; margin-top: 4px; font-size: 12px; color: #1a7f37; }
+.sef-eff.is-down { color: #b32d2e; }
+.sef-status-line { margin: 6px 0 0; font-weight: 600; }
+.sef-status-line.is-ok { color: #1a7f37; }
+.sef-status-line.is-bad { color: #b32d2e; }
+.sef-forms-table .col-mode { width: 380px; }
+.sef-gov-select { display: block; margin-top: 4px; width: 100%; max-width: 330px; }
+.sef-media { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-top: 6px; }
+.sef-media-item { display: inline-block; font-size: 12px; background: #f0f6fc; border: 1px solid #c5d9ed; border-radius: 3px; padding: 1px 6px; }
+.sef-docs-table td { vertical-align: top; padding: 8px; }
+.sef-docs-table .col-group { width: 190px; }
+.sef-docs-table .col-group select { display: block; width: 100%; margin-bottom: 4px; }
+.sef-docs-table .col-kind { width: 200px; }
+.sef-docs-table .col-kind select { width: 100%; }
+.sef-docs-table .sef-doc-desc { margin-top: 4px; }
+.sef-doc-id { display: inline-block; margin-top: 4px; font-size: 11px; user-select: all; }
+.sef-docs-table tr[data-kind="download"] .sef-doc-url { display: none; }
+.sef-docs-table tr[data-kind="link"] .sef-doc-files { display: none; }
+.sef-forms-table tr.is-other-level .sef-other-level { opacity: 1; }
+.sef-other-level { display: inline-flex; gap: 6px; align-items: center; margin-top: 4px; font-size: 12px; }
+
+/* Είδη άδειας εκπαιδευτικών */
+.sef-leaves-table { margin-top: 10px; }
+.sef-leaves-table td { vertical-align: top; padding: 6px 8px; }
+.sef-leaves-table .col-drag { width: 44px; white-space: nowrap; }
+.sef-leaves-table .col-drag .button-link { padding: 0 3px; font-size: 15px; text-decoration: none; }
+.sef-leaves-table .col-on { width: 54px; }
+.sef-leaves-table .col-flags { width: 210px; font-size: 12.5px; line-height: 2; }
+.sef-leaves-table .col-del { width: 30px; }
+.sef-leaves-table textarea { min-height: 40px; }
+
+/* Περίοδος εμφάνισης */
+.sef-season { display: block; margin-top: 6px; font-size: 12.5px; }
+.sef-season .sef-dm { width: 64px; }
+.sef-season .sef-in { color: #1a7f37; } .sef-season .sef-out { color: #b3261e; }
+
+/* 0.9.2: σύνδεσμος-προβολή — έτοιμα shortcode και «φτιάξτε το δικό σας» */
+.sef-promo-presets { max-width: 1100px; margin: 8px 0 18px; }
+.sef-promo-presets td { vertical-align: middle; }
+.sef-promo-presets td:first-child { width: 260px; }
+.sef-promo-presets td:last-child { width: 110px; }
+.sef-promo-builder { display: grid; grid-template-columns: minmax(280px, 420px) minmax(0, 1fr); gap: 24px; align-items: start; max-width: 1200px; }
+.sef-pb-frame { max-width: 860px; transition: max-width .2s; }
+.sef-pb-frame.is-side { max-width: 300px; }
+.sef-pb-frame .sef-promo [hidden] { display: none !important; }
+@media (max-width: 960px) { .sef-promo-builder { grid-template-columns: 1fr; } }
