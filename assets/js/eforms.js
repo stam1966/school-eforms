@@ -505,9 +505,10 @@
     // «πεδίο=τιμή» ή «πεδίο@attr=τιμή» (data-attr της επιλεγμένης επιλογής λίστας)
     function cond(expr) {
       var i = String(expr || '').indexOf('='); if (i < 1) { return false; }
-      var key = expr.slice(0, i), want = expr.slice(i + 1), at = key.indexOf('@');
-      if (at > 0) { return optAttr(key.slice(0, at), key.slice(at + 1)) === want; }
-      var el = field(key); return !!el && el.value === want;
+      // «κλειδί=α|β»: αληθές για οποιαδήποτε από τις τιμές (0.9.9, π.χ. kids=3|4).
+      var key = expr.slice(0, i), want = expr.slice(i + 1).split('|'), at = key.indexOf('@');
+      if (at > 0) { return want.indexOf(optAttr(key.slice(0, at), key.slice(at + 1))) >= 0; }
+      var el = field(key); return !!el && want.indexOf(el.value) >= 0;
     }
     /* Συνημμένα ανά επιλογή: κουτάκια από το data-docs («Α|Β») της επιλεγμένης επιλογής */
     function attachments() {

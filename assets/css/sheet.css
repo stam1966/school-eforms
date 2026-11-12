@@ -191,6 +191,12 @@ form.sef-sheet .yd-sign select, form.sef-sheet .ap-sign select { padding-right: 
 .ol-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 6px 0; font-size: 14px; }
 .ol-opts { display: flex; flex-wrap: wrap; gap: 6px 22px; }
 .ol-note { font-size: 12px; margin: 4px 0 0 !important; }
+/* Επικαιροποίηση Ολοήμερου (0.9.9): ενημερωτικό κείμενο + αίτηση έως 4 παιδιών */
+.ou-info { font-size: 13.5px; line-height: 1.5; text-align: justify; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 10px; }
+.ou-info p { margin: 0 0 4px !important; text-indent: 1.2em; }
+.ou-title { text-align: center; font-weight: 700; font-size: 14px; margin: 0 0 10px !important; }
+.ou-child { margin: 10px 0 4px; padding-top: 2px; }
+.ou-child + .ou-child { border-top: 1px dotted #999; padding-top: 8px; }
 .ol-sign { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-top: 18px; }
 .ol-sign .ap-place { margin: 0; padding: 0; }
 .ol-sign .ap-sign { margin: 0; padding: 0; min-width: 260px; }
