@@ -1,0 +1,5 @@
+# Δεν μπαίνουν στο zip του GitHub (archive) που κατεβάζει το WordPress
+.gitattributes export-ignore
+.gitignore export-ignore
+README.md export-ignore
+update.json export-ignore
