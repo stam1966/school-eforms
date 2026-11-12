@@ -2,7 +2,7 @@
 /**
  * Ενημερώσεις από το GitHub (0.9.6).
  *
- * Το WordPress ελέγχει για ενημερώσεις πρόσθετων περίπου δύο φορές την ημέρα. Τότε το πρόσθετο διαβάζει
+ * Το WordPress ελέγχει για ενημερώσεις πρόσθετων μερικές φορές την ημέρα. Τότε το πρόσθετο διαβάζει
  * το μικρό αρχείο update.json του repository stam1966/school-eforms και, αν η έκδοση είναι νεότερη,
  * η ενημέρωση εμφανίζεται στον πίνακα του WordPress όπως σε κάθε άλλο πρόσθετο (ενημέρωση με ένα κλικ,
  * «Λεπτομέρειες έκδοσης» με τη λίστα αλλαγών, αυτόματες ενημερώσεις αν τις ενεργοποιήσει ο διαχειριστής).
@@ -23,7 +23,7 @@ class SEF_Updater {
 	const REPO      = 'https://github.com/stam1966/school-eforms';
 	const INFO_URL  = 'https://raw.githubusercontent.com/stam1966/school-eforms/main/update.json';
 	const CACHE     = 'sef_update_info';
-	const CACHE_TTL = 43200; // 12 ώρες
+	const CACHE_TTL = 10800; // 3 ώρες (0.9.8· πριν 12)
 
 	public static function init() {
 		add_filter( 'pre_set_site_transient_update_plugins', array( __CLASS__, 'inject' ) );
@@ -31,6 +31,7 @@ class SEF_Updater {
 		add_filter( 'upgrader_source_selection', array( __CLASS__, 'fix_folder' ), 10, 4 );
 		add_action( 'upgrader_process_complete', array( __CLASS__, 'clear' ), 10, 0 );
 		add_filter( 'plugin_row_meta', array( __CLASS__, 'row_meta' ), 10, 2 );
+		add_action( 'admin_post_sef_update_check', array( __CLASS__, 'check_now' ) );
 	}
 
 	public static function enabled() {
@@ -47,8 +48,10 @@ class SEF_Updater {
 	}
 
 	/**
-	 * Τα στοιχεία της τελευταίας έκδοσης (με προσωρινή μνήμη 12 ωρών· αποτυχία → 1 ώρα, για να μη
-	 * βαραίνει ο πίνακας όταν το GitHub δεν απαντά). $force: «Έλεγχος ξανά» στη σελίδα Ενημερώσεων.
+	 * Τα στοιχεία της τελευταίας έκδοσης (με προσωρινή μνήμη 3 ωρών· αποτυχία → 1 ώρα, για να μη
+	 * βαραίνει ο πίνακας όταν το GitHub δεν απαντά). $force: «Έλεγχος ξανά» στη σελίδα Ενημερώσεων
+	 * ή «Έλεγχος τώρα» στις ρυθμίσεις. Στην προσωρινή μνήμη μένουν και η ώρα του ελέγχου και,
+	 * αν απέτυχε, το σφάλμα (για την ένδειξη στις ρυθμίσεις).
 	 */
 	public static function info( $force = false ) {
 		if ( ! self::enabled() ) {
@@ -66,11 +69,21 @@ class SEF_Updater {
 				'headers'    => array( 'Accept' => 'application/json' ),
 			)
 		);
-		$data = null;
-		if ( ! is_wp_error( $r ) && 200 === (int) wp_remote_retrieve_response_code( $r ) ) {
+		$data  = null;
+		$error = '';
+		if ( is_wp_error( $r ) ) {
+			$error = 'δεν έγινε σύνδεση με το GitHub (' . mb_substr( $r->get_error_message(), 0, 140 ) . ')';
+		} elseif ( 200 !== (int) wp_remote_retrieve_response_code( $r ) ) {
+			$error = 'το GitHub απάντησε με κωδικό ' . (int) wp_remote_retrieve_response_code( $r );
+		} else {
 			$data = self::parse( wp_remote_retrieve_body( $r ) );
+			if ( ! $data ) {
+				$error = 'μη έγκυρο αρχείο ενημέρωσης';
+			}
 		}
-		set_site_transient( self::CACHE, $data ? $data : array( 'version' => '' ), $data ? self::CACHE_TTL : HOUR_IN_SECONDS );
+		$store = $data ? $data : array( 'version' => '', 'error' => $error );
+		$store['checked_at'] = time();
+		set_site_transient( self::CACHE, $store, $data ? self::CACHE_TTL : HOUR_IN_SECONDS );
 		return $data;
 	}
 
@@ -100,6 +113,25 @@ class SEF_Updater {
 		);
 	}
 
+	/**
+	 * Η εγκατεστημένη έκδοση όπως είναι στον δίσκο. Μετά από αναβάθμιση, στο ίδιο αίτημα (ή με OPcache)
+	 * το SEF_VERSION μπορεί να είναι ακόμη το παλιό· γι' αυτό προτιμάται η έκδοση που διάβασε το WordPress
+	 * από τα αρχεία ($transient->checked) ή η κεφαλίδα του αρχείου (0.9.8).
+	 */
+	public static function installed_version( $transient = null ) {
+		$base = self::basename();
+		if ( is_object( $transient ) && ! empty( $transient->checked[ $base ] ) ) {
+			return (string) $transient->checked[ $base ];
+		}
+		if ( function_exists( 'get_file_data' ) ) {
+			$h = get_file_data( SEF_FILE, array( 'Version' => 'Version' ) );
+			if ( ! empty( $h['Version'] ) ) {
+				return (string) $h['Version'];
+			}
+		}
+		return SEF_VERSION;
+	}
+
 	/** Προσθέτει την ενημέρωση στη λίστα του WordPress, όταν υπάρχει νεότερη έκδοση. */
 	public static function inject( $transient ) {
 		if ( ! is_object( $transient ) ) {
@@ -108,11 +140,12 @@ class SEF_Updater {
 		$force = is_admin() && isset( $_GET['force-check'] ); // phpcs:ignore WordPress.Security.NonceVerification -- μόνο ανάγνωση
 		$info  = self::info( $force );
 		$base  = self::basename();
+		$have  = self::installed_version( $transient );
 		$item  = (object) array(
 			'id'           => self::REPO,
 			'slug'         => self::SLUG,
 			'plugin'       => $base,
-			'new_version'  => $info ? $info['version'] : SEF_VERSION,
+			'new_version'  => $info ? $info['version'] : $have,
 			'url'          => self::REPO,
 			'package'      => $info ? $info['download'] : '',
 			'requires'     => $info ? $info['requires'] : '',
@@ -121,7 +154,7 @@ class SEF_Updater {
 			'icons'        => array(),
 			'banners'      => array(),
 		);
-		if ( $info && version_compare( $info['version'], SEF_VERSION, '>' ) ) {
+		if ( $info && version_compare( $info['version'], $have, '>' ) ) {
 			if ( ! isset( $transient->response ) || ! is_array( $transient->response ) ) {
 				$transient->response = array();
 			}
@@ -131,7 +164,7 @@ class SEF_Updater {
 			if ( ! isset( $transient->no_update ) || ! is_array( $transient->no_update ) ) {
 				$transient->no_update = array();
 			}
-			$item->new_version             = SEF_VERSION;
+			$item->new_version             = $have;
 			$transient->no_update[ $base ] = $item;
 			if ( isset( $transient->response[ $base ] ) ) {
 				unset( $transient->response[ $base ] );
@@ -212,6 +245,53 @@ class SEF_Updater {
 
 	public static function clear() {
 		delete_site_transient( self::CACHE );
+	}
+
+	/** Σύνδεσμος «Έλεγχος τώρα» (ρυθμίσεις του πρόσθετου). */
+	public static function check_now_url() {
+		return wp_nonce_url( add_query_arg( array( 'action' => 'sef_update_check' ), admin_url( 'admin-post.php' ) ), 'sef_update_check' );
+	}
+
+	/** «Έλεγχος τώρα»: νέος έλεγχος στο GitHub και ανανέωση της λίστας ενημερώσεων του WordPress. */
+	public static function check_now() {
+		if ( ! current_user_can( 'update_plugins' ) && ! current_user_can( 'manage_options' ) ) {
+			wp_die( 'Δεν επιτρέπεται.' );
+		}
+		check_admin_referer( 'sef_update_check' );
+		$info = self::info( true );
+		delete_site_transient( 'update_plugins' ); // το WordPress ξαναφτιάχνει τη λίστα με το νέο αποτέλεσμα
+		if ( function_exists( 'wp_update_plugins' ) ) {
+			wp_update_plugins();
+		}
+		$args = array( 'page' => 'school-eforms', 'tab' => 'send', 'sef_upd' => $info ? 'ok' : 'fail' );
+		wp_safe_redirect( add_query_arg( $args, admin_url( 'options-general.php' ) ) . '#sef-updates' );
+		exit;
+	}
+
+	/** Κείμενο κατάστασης για τις ρυθμίσεις: τελευταίος έλεγχος, έκδοση στο GitHub ή σφάλμα. */
+	public static function status_html() {
+		if ( ! self::enabled() ) {
+			return '';
+		}
+		$c    = get_site_transient( self::CACHE );
+		$have = self::installed_version();
+		$out  = '';
+		if ( is_array( $c ) && ! empty( $c['version'] ) ) {
+			$out .= 'Τελευταία έκδοση στο GitHub: <b>' . esc_html( $c['version'] ) . '</b>';
+			$out .= version_compare( $c['version'], $have, '>' )
+				? ' — <a href="' . esc_url( self_admin_url( 'update-core.php' ) ) . '">ενημέρωση τώρα</a>'
+				: ' (έχετε την τελευταία, ' . esc_html( $have ) . ')';
+			$out .= '.';
+		} elseif ( is_array( $c ) && ! empty( $c['error'] ) ) {
+			$hint = 0 === strpos( $c['error'], 'δεν έγινε σύνδεση' ) ? ' Αν επαναλαμβάνεται, ο πάροχος φιλοξενίας ίσως μπλοκάρει τις συνδέσεις προς το GitHub.' : ' Δοκιμάστε ξανά αργότερα.';
+			$out .= '<span class="sef-upd-err">Ο τελευταίος έλεγχος απέτυχε: ' . esc_html( $c['error'] ) . '.' . esc_html( $hint ) . '</span>';
+		} else {
+			$out .= 'Δεν έχει γίνει ακόμη έλεγχος.';
+		}
+		if ( is_array( $c ) && ! empty( $c['checked_at'] ) ) {
+			$out .= ' Τελευταίος έλεγχος: ' . esc_html( wp_date( 'j/n/Y H:i', (int) $c['checked_at'] ) ) . '.';
+		}
+		return $out;
 	}
 
 	/** Σύνδεσμοι κάτω από το πρόσθετο στη λίστα «Πρόσθετα». */

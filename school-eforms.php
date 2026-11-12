@@ -3,7 +3,7 @@
  * Plugin Name:       School e-Forms
  * Description:       Ηλεκτρονικά έντυπα σχολείου: συμπλήρωση πάνω στο επίσημο υπόδειγμα, PDF με πραγματικό ελληνικό κείμενο, ψηφιακή βεβαίωση μέσω gov.gr και αποστολή στο σχολείο. Χωρίς αποθήκευση προσωπικών δεδομένων.
  * Plugin URI:        https://github.com/stam1966/school-eforms
- * Version:           0.9.7
+ * Version:           0.9.8
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            School e-Forms Project
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SEF_VERSION', '0.9.7' );
+define( 'SEF_VERSION', '0.9.8' );
 define( 'SEF_FILE', __FILE__ );
 define( 'SEF_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SEF_URL', plugin_dir_url( __FILE__ ) );

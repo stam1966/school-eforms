@@ -385,6 +385,13 @@ final class SEF_Admin {
 			<?php elseif ( isset( $_GET['sef_copy_err'] ) ) : // phpcs:ignore ?>
 				<div class="notice notice-error is-dismissible"><p><?php echo esc_html( rawurldecode( sanitize_text_field( wp_unslash( $_GET['sef_copy_err'] ) ) ) ); // phpcs:ignore ?></p></div>
 			<?php endif; ?>
+			<?php if ( isset( $_GET['sef_upd'] ) ) : // phpcs:ignore ?>
+				<?php if ( 'ok' === $_GET['sef_upd'] ) : // phpcs:ignore ?>
+					<div class="notice notice-success is-dismissible"><p>Έγινε έλεγχος για ενημερώσεις. <?php echo SEF_Updater::status_html(); // phpcs:ignore ?></p></div>
+				<?php else : ?>
+					<div class="notice notice-error is-dismissible"><p><?php echo SEF_Updater::status_html(); // phpcs:ignore ?></p></div>
+				<?php endif; ?>
+			<?php endif; ?>
 			<?php if ( isset( $_GET['sef_mail'] ) ) : // phpcs:ignore ?>
 				<?php if ( 'ok' === $_GET['sef_mail'] ) : // phpcs:ignore ?>
 					<div class="notice notice-success is-dismissible"><p>Το δοκιμαστικό email στάλθηκε στο <b><?php echo esc_html( $s['school_email'] ); ?></b>. Ελέγξτε τα εισερχόμενα (και τα ανεπιθύμητα).</p></div>
@@ -614,9 +621,11 @@ final class SEF_Admin {
 						self::text( $s, 'gov_cert_url', 'Σελίδα «Ψηφιακή βεβαίωση εγγράφου»', array( 'type' => 'url', 'class' => 'large-text' ) );
 						self::text( $s, 'gov_yd_url', 'Σελίδα «Υπεύθυνη δήλωση»', array( 'type' => 'url', 'class' => 'large-text' ) );
 						?>
-						<tr><th scope="row">Ενημερώσεις του πρόσθετου</th><td><?php self::check( $s, 'update_check', 'Έλεγχος για νέες εκδόσεις', 'Περίπου δύο φορές την ημέρα η ιστοσελίδα ελέγχει στο <a href="https://github.com/stam1966/school-eforms" target="_blank" rel="noopener noreferrer">GitHub</a> αν υπάρχει νεότερη έκδοση· τότε εμφανίζεται στα «Πρόσθετα» και στις «Ενημερώσεις» με ένα κλικ, όπως κάθε άλλο πρόσθετο. Δεν στέλνεται κανένα στοιχείο του σχολείου. Αν το απενεργοποιήσετε, οι ενημερώσεις γίνονται μόνο χειροκίνητα (μεταφόρτωση zip).' ); ?>
-							<?php $ui = SEF_Updater::enabled() ? get_site_transient( SEF_Updater::CACHE ) : null; ?>
-							<?php if ( is_array( $ui ) && ! empty( $ui['version'] ) ) : ?><p class="description">Τελευταία έκδοση στο GitHub: <b><?php echo esc_html( $ui['version'] ); ?></b><?php echo version_compare( $ui['version'], SEF_VERSION, '>' ) ? ' — <a href="' . esc_url( self_admin_url( 'plugins.php' ) ) . '">ενημέρωση στα Πρόσθετα</a>' : ' (έχετε την τελευταία)'; ?>.</p><?php endif; ?>
+						<tr id="sef-updates"><th scope="row">Ενημερώσεις του πρόσθετου</th><td><?php self::check( $s, 'update_check', 'Έλεγχος για νέες εκδόσεις', 'Μερικές φορές την ημέρα η ιστοσελίδα ελέγχει στο <a href="https://github.com/stam1966/school-eforms" target="_blank" rel="noopener noreferrer">GitHub</a> αν υπάρχει νεότερη έκδοση· τότε εμφανίζεται στα «Πρόσθετα» και στις «Ενημερώσεις» με ένα κλικ, όπως κάθε άλλο πρόσθετο. Δεν στέλνεται κανένα στοιχείο του σχολείου. Αν το απενεργοποιήσετε, οι ενημερώσεις γίνονται μόνο χειροκίνητα (μεταφόρτωση zip).' ); ?>
+							<?php if ( SEF_Updater::enabled() ) : ?>
+								<p class="description"><?php echo SEF_Updater::status_html(); // phpcs:ignore WordPress.Security.EscapeOutput -- escaped μέσα ?></p>
+								<p><a class="button" href="<?php echo esc_url( SEF_Updater::check_now_url() ); ?>">Έλεγχος τώρα</a></p>
+							<?php endif; ?>
 						</td></tr>
 					</table>
 				</section>
