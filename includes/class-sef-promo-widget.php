@@ -76,9 +76,7 @@ class SEF_Promo_Widget extends WP_Widget {
 		if ( '' === $out['title'] ) {
 			$out['title'] = self::$defaults['title'];
 		}
-		if ( '' === $out['button'] ) {
-			$out['button'] = self::$defaults['button'];
-		}
+		$out['button'] = SEF_Promo::clean_button( $out['button'] ); // χωρίς βελάκι στο τέλος· κενό → «Είσοδος»
 		return $out;
 	}
 }

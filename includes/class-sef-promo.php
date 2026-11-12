@@ -70,6 +70,12 @@ class SEF_Promo {
 		return sanitize_hex_color( $v ) ? $v : '';
 	}
 
+	/** Κείμενο κουμπιού χωρίς βελάκι/σύμβολο στο τέλος (›, », >, →, ➜ κ.λπ.)· κενό → «Είσοδος». */
+	public static function clean_button( $text ) {
+		$t = trim( preg_replace( '/[\s\x{00A0}]*(?:[›»>→➜➔⟶▸▶︎❯]|&gt;|&raquo;|&rsaquo;)+[\s\x{00A0}]*$/u', '', (string) $text ) );
+		return '' === $t ? 'Είσοδος' : $t;
+	}
+
 	public static function shortcode( $attrs ) {
 		$s = SEF_Settings::get();
 		$a = shortcode_atts(
@@ -88,6 +94,10 @@ class SEF_Promo {
 			$attrs,
 			'school_eforms_link'
 		);
+
+		// Βελάκι ή σύμβολο στο τέλος του κειμένου του κουμπιού (π.χ. «Είσοδος ›») δεν χρειάζεται: το βελάκι
+		// μπαίνει διακοσμητικά και δεν πρέπει να το διαβάζουν οι αναγνώστες οθόνης (0.9.7).
+		$a['button'] = self::clean_button( $a['button'] );
 
 		$url = '#' === trim( $a['url'] ) ? '#' : ( '' !== trim( $a['url'] ) ? esc_url_raw( trim( $a['url'] ) ) : self::forms_url() ); // «#» = προεπισκόπηση διαχείρισης
 		if ( '' === $url ) {
@@ -166,7 +176,7 @@ class SEF_Promo {
 						</p>
 					<?php endif; ?>
 				</div>
-				<a class="sef-promo__btn" href="<?php echo esc_url( $url ); ?>"><?php echo esc_html( $a['button'] ); ?><span class="sef-sr-p"> — <?php echo esc_html( $a['title'] ); ?></span><span aria-hidden="true" class="sef-promo__arrow">›</span></a>
+				<a class="sef-promo__btn" href="<?php echo esc_url( $url ); ?>" aria-label="<?php echo esc_attr( $a['button'] . ' — ' . $a['title'] ); ?>"><?php echo esc_html( $a['button'] ); ?><span aria-hidden="true" class="sef-promo__arrow"></span></a>
 			</div>
 		</section>
 		<?php
@@ -202,7 +212,7 @@ class SEF_Promo {
 .sef-promo a.sef-promo__btn{position:relative;z-index:1;flex:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;margin:0;padding:12px 30px;border-radius:99px;background:var(--sef-p-hl);color:var(--hl-ink);font-size:17px;font-weight:800;line-height:1.2;text-decoration:none;text-transform:none;letter-spacing:0;box-shadow:0 4px 12px rgba(0,0,0,.18);transition:transform .15s,box-shadow .15s}
 .sef-promo a.sef-promo__btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(0,0,0,.22)}
 .sef-promo a:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px rgba(0,0,0,.55)}
-.sef-promo__arrow{font-size:1.4em;line-height:1;margin-top:-2px}
+.sef-promo__arrow{flex:none;width:.5em;height:.5em;border:solid currentColor;border-width:.16em .16em 0 0;transform:rotate(45deg);margin-left:-.1em}
 .sef-sr-p{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @container (max-width:620px){
 .sef-promo__in{flex-direction:column;align-items:flex-start;gap:16px;padding:22px 20px}
