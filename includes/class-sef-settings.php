@@ -42,6 +42,7 @@ final class SEF_Settings {
 			'trust_proxy'       => '0',
 			'sig_policy'        => 'warn',
 			'show_links'        => '0',
+			'update_check'      => '1',
 			'links'             => self::default_links(),
 			'links_v'           => 2,          // 0.7.0: «Για» σε κάθε υπηρεσία + υπηρεσίες εκπαιδευτικών
 			'home_layout'       => 'sections', // sections = κεντρική σελίδα με ενότητες · list = όλα σε μία λίστα
@@ -1046,6 +1047,11 @@ final class SEF_Settings {
 		$out['trust_proxy']    = ! empty( $in['trust_proxy'] ) ? '1' : '0';
 		$out['sig_policy']     = isset( $in['sig_policy'] ) && in_array( $in['sig_policy'], array( 'off', 'warn', 'require' ), true ) ? $in['sig_policy'] : 'warn';
 		$out['show_links']     = ! empty( $in['show_links'] ) ? '1' : '0';
+		$out['update_check']   = ! empty( $in['update_check'] ) ? '1' : '0';
+		if ( $out['update_check'] !== (string) ( self::get()['update_check'] ?? '1' ) ) {
+			delete_site_transient( 'sef_update_info' );
+			delete_site_transient( 'update_plugins' ); // ξαναελέγχει με τη νέα ρύθμιση
+		}
 		$out['links'] = array();
 		if ( isset( $in['links'] ) && is_array( $in['links'] ) ) {
 			foreach ( $in['links'] as $row ) {

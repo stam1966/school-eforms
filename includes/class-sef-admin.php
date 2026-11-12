@@ -614,6 +614,10 @@ final class SEF_Admin {
 						self::text( $s, 'gov_cert_url', 'Σελίδα «Ψηφιακή βεβαίωση εγγράφου»', array( 'type' => 'url', 'class' => 'large-text' ) );
 						self::text( $s, 'gov_yd_url', 'Σελίδα «Υπεύθυνη δήλωση»', array( 'type' => 'url', 'class' => 'large-text' ) );
 						?>
+						<tr><th scope="row">Ενημερώσεις του πρόσθετου</th><td><?php self::check( $s, 'update_check', 'Έλεγχος για νέες εκδόσεις', 'Περίπου δύο φορές την ημέρα η ιστοσελίδα ελέγχει στο <a href="https://github.com/stam1966/school-eforms" target="_blank" rel="noopener noreferrer">GitHub</a> αν υπάρχει νεότερη έκδοση· τότε εμφανίζεται στα «Πρόσθετα» και στις «Ενημερώσεις» με ένα κλικ, όπως κάθε άλλο πρόσθετο. Δεν στέλνεται κανένα στοιχείο του σχολείου. Αν το απενεργοποιήσετε, οι ενημερώσεις γίνονται μόνο χειροκίνητα (μεταφόρτωση zip).' ); ?>
+							<?php $ui = SEF_Updater::enabled() ? get_site_transient( SEF_Updater::CACHE ) : null; ?>
+							<?php if ( is_array( $ui ) && ! empty( $ui['version'] ) ) : ?><p class="description">Τελευταία έκδοση στο GitHub: <b><?php echo esc_html( $ui['version'] ); ?></b><?php echo version_compare( $ui['version'], SEF_VERSION, '>' ) ? ' — <a href="' . esc_url( self_admin_url( 'plugins.php' ) ) . '">ενημέρωση στα Πρόσθετα</a>' : ' (έχετε την τελευταία)'; ?>.</p><?php endif; ?>
+						</td></tr>
 					</table>
 				</section>
 
